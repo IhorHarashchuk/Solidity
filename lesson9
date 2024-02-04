@@ -1,0 +1,31 @@
+// SPDX-License-Identifier: MIT
+pragma solidity =0.8.23;
+
+contract Contact {
+    string private _name;
+
+    constructor(string memory name) {
+        _name = name;
+    }
+
+    function getName() public view returns (string memory) {
+        return _name;
+    }
+
+    function reply() public view returns(string memory) {
+        return string.concat(getName(), " on call!");
+    }
+}
+
+contract ContactBook {
+    Contact[] public _contacts;
+
+    function addContact(string memory name) public {
+        Contact contact = new Contact(name);
+        _contacts.push(contact);
+    }
+
+    function callContact(uint index) public view returns(string memory) {
+        return _contacts[index].reply();
+    }
+}
