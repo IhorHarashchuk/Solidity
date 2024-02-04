@@ -1,31 +1,82 @@
 // SPDX-License-Identifier: MIT
 pragma solidity =0.8.23;
 
-contract Contact {
-    string private _name;
-
-    constructor(string memory name) {
-        _name = name;
-    }
-
-    function getName() public view returns (string memory) {
-        return _name;
-    }
-
-    function reply() public view returns(string memory) {
-        return string.concat(getName(), " on call!");
+library StringCompare {
+    function compare(string memory str1, string memory str2) public pure returns(bool) {
+        return keccak256(abi.encodePacked(str1)) == keccak256(abi.encodePacked(str2));
     }
 }
 
-contract ContactBook {
-    Contact[] public _contacts;
+interface Living {
+    function eat(string memory food) external returns(string memory);
+}
 
-    function addContact(string memory name) public {
-        Contact contact = new Contact(name);
-        _contacts.push(contact);
+abstract contract Animal is Living {
+    function eat(string memory food) pure virtual public returns(string memory) {
+        return string.concat("Animals eat ", food);
     }
 
-    function callContact(uint index) public view returns(string memory) {
-        return _contacts[index].reply();
+    function sleap() pure virtual public returns(string memory) {
+        return "";
+    }
+
+    function speak() pure virtual public returns(string memory) {
+        return "";
+    }
+}
+
+abstract contract Herbivore is Animal {
+    string constant PLANT = "plant";
+
+    modifier eatOnlyPlants(string memory food) {
+        require(StringCompare.compare(food, PLANT), "Can only eat plant food");
+        _;
+    }
+
+    function eat(string memory food) pure virtual override public eatOnlyPlants(food) returns(string memory) {
+        return super.eat(food);
+    }
+}
+
+contract Cow is Herbivore {
+    function speak() pure override public returns(string memory) {
+        return "Mooooo";
+    }
+}
+
+contract Hourse is Herbivore {
+    function speak() pure override public returns(string memory) {
+        return "Igogo";
+    }
+}
+
+abstract contract MeatEatingAnimal is Animal {
+    string constant MEAT = "meat";
+
+    modifier eatOnlyMeat(string memory food) {
+        require(StringCompare.compare(food, MEAT), "Can only eat meat food");
+        _;
+    }
+
+    function eat(string memory food) pure virtual override public eatOnlyMeat(food) returns(string memory) {
+        return super.eat(food);
+    }
+}
+
+contract Wolf is MeatEatingAnimal {
+    function speak() pure override public returns(string memory) {
+        return "Awoo";
+    }
+}
+
+abstract contract Pats is Herbivore, MeatEatingAnimal {
+  function eat(string memory food) pure virtual override(Herbivore, MeatEatingAnimal) public returns(string memory) {
+        return super.eat(food);
+    }
+}
+
+contract Dog is Pats {
+    function speak() pure override public returns(string memory) {
+        return "Woof";
     }
 }
